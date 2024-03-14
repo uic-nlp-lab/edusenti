@@ -1,10 +1,15 @@
 # EduSenti: Education Review Sentiment in Albanian
 
-Student to instructor review sentiment analysis.  This repo contains the code,
-data, and instructions to reproduce the results in the paper [RoBERTa Low
-Resource Fine Tuning for Sentiment Analysis in Albanian].  If you want to use
-sentiment model rather than training it yourself, follow the instructions using
-the [zensols.edusenti] repository.
+This repo contains the code, data, and instructions to reproduce the results in
+the paper [RoBERTa Low Resource Fine Tuning for Sentiment Analysis in
+Albanian].
+
+
+## Inclusion in Your Projects
+
+If you want to use sentiment model in your own work, follow the instructions
+using the [zensols.edusenti] repository.  If you use our model or API, please
+[cite](#citation) our paper.
 
 
 ## Reproducing the Results
@@ -67,6 +72,23 @@ select cs.id as name, cs.url, count(*) as count
 
 See the [corpus creation SQL](resources/finetune.sql) for useful queries and to
 see how it was procured/cleaned.
+
+
+## Citation
+
+If you use this project in your research please use the following BibTeX entry:
+
+```bibtex
+@inproceedings{nuciRoBERTaLowResource2024,
+  title = {{{RoBERTa Low Resource Fine Tuning}} for {{Sentiment Analysis}} in {{Albanian}}},
+  booktitle = {The 2024 {{Joint International Conference}} on {{Computational Linguistics}}, {{Language Resources}} and {{Evaluation}}},
+  author = {Nuci, Krenare and Landes, Paul and Di Eugenio, Barbara},
+  date = {2024-05-20},
+  publisher = {International Committee on Computational Linguistics},
+  location = {Turin, Italy},
+  eventtitle = {{{LREC-COLING}} 2024}
+}
+```
 
 
 ## License
