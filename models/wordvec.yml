@@ -1,0 +1,12 @@
+## Word vec
+#
+edusenti_default:
+  embedding_name: glove_50
+  add_features: topic, emotion,
+
+classify_net_settings:
+  recurrent_settings: 'instance: recurrent_settings'
+
+model_settings:
+  learning_rate: 2e-3
+  epochs: 100

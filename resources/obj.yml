@@ -1,0 +1,184 @@
+# description: application context
+
+## Natural language parsing
+#
+# override to provide the labels to vectorize
+classify_label_vectorizer:
+  categories: ${dataframe_stash:labels}
+
+
+## Feature creation
+#
+# URL of where to find the corpus (git repo for now)
+feature_resource:
+  url: 'file:${deepnlp_default:corpus_dir}/edusenti-corpus.zip'
+
+# massages the corpora into a usable dataframe (only code in this project)
+dataframe_stash:
+  class_name: uic.edusenti.SentimentDataframeStash
+  labels: 'list: +, -, n'
+  lang: ${edusenti_default:lang}
+
+# the stash of extracted language features in child processes for SpaCy parsing
+feature_factory_stash:
+  additional_columns: [label, topic, emotion]
+
+# key column used to stratify across all classes
+feature_split_key_container:
+  partition_attr: 'label'
+
+# keys written for reproducibility have directories that branch off language
+feature_split_key_container:
+  key_path: 'path: ${deepnlp_default:corpus_dir}/dataset-row-ids/${edusenti_default:lang}'
+  # distribution of each data set
+  #distribution = dict: {'train': 0.8, 'test': 0.1, 'validation': 0.1}
+
+
+## Natural language parsing
+#
+# override for creating instances of a class that have an attribute for the
+# label of the text classification
+doc_parser:
+  condition:
+    if: "eval: '${edusenti_default:lang}' == 'en'"
+    then:
+      class_name: ${doc_parser:class_name}
+    else:
+      class_name: zensols.nlp.WhiteSpaceTokenizerFeatureDocumentParser
+  doc_class: 'class: uic.edusenti.SentimentFeatureDocument'
+
+# only the Albanian model uses the transformer trainable (as apposed to
+# trainable sbert)
+transformer_trainable_resource:
+  model_id: ${edusenti_default:transformer_trainable_resource_model_id}
+
+
+## Vectorize
+#
+# add topic as a vectorized feature
+edusenti_topic_vectorizer:
+  class_name: zensols.deepnlp.vectorize.OneHotEncodedFeatureDocumentVectorizer
+  feature_id: top
+  optimize_bools: false
+  encode_transformed: false
+  feature_attribute: topic
+  level: document
+  categories:
+    - institution
+    - project
+    - online
+    - learning
+    - general
+    - subject
+    - professor
+    - assessment
+    - online learning
+
+# add emotion as a vectorized feature
+edusenti_emotion_vectorizer:
+  class_name: zensols.deepnlp.vectorize.OneHotEncodedFeatureDocumentVectorizer
+  feature_id: emot
+  optimize_bools: false
+  encode_transformed: false
+  feature_attribute: emotion
+  level: document
+  categories:
+    - surprise
+    - joy
+    - sadness
+    - neutral
+    - fear
+    - love
+    - anger
+
+# create a new vectorizer manager for the review specific features
+edusenti_vectorizer_manager:
+  class_name: zensols.deepnlp.vectorize.FeatureDocumentVectorizerManager
+  torch_config: 'instance: gpu_torch_config'
+  doc_parser: 'instance: doc_parser'
+  # do not truncate tokens
+  token_length: -1
+  configured_vectorizers: [edusenti_topic_vectorizer, edusenti_emotion_vectorizer]
+
+# update the set of vectorizor managers to include our review manager
+vectorizer_manager_set:
+  names: [language_vectorizer_manager, classify_label_vectorizer_manager, edusenti_vectorizer_manager]
+
+
+## Batch
+#
+# batch mappings from attribute to feature IDs and which to use from resource libs
+edusenti_batch_mappings:
+  batch_feature_mapping_adds:
+    - 'dataclass(zensols.deeplearn.batch.BatchFeatureMapping): classify_label_batch_mappings'
+    - 'dataclass(zensols.deeplearn.batch.BatchFeatureMapping): lang_batch_mappings'
+  manager_mappings:
+    - vectorizer_manager_name: edusenti_vectorizer_manager
+      fields:
+        - attr: topic
+          feature_id: top
+          attr_access: doc
+          is_agg: false
+        - attr: emotion
+          feature_id: emot
+          attr_access: doc
+          is_agg: false
+  field_keep:
+    - label
+    - topic
+    - emotion
+    - glove_50_embedding
+    - fasttext_news_300_embedding
+    - transformer_trainable_embedding
+#    - transformer_sent_trainable_embedding
+
+# batch feature grouping for vectorized features that share the same file space
+batch_dir_stash:
+  groups: >-
+    eval: ({'label'},
+           {'topic', 'emotion'},
+           {'glove_50_embedding'},
+           {'fasttext_news_300_embedding'},
+           {'transformer_trainable_embedding'})
+#           {'transformer_sent_trainable_embedding'}
+
+
+# map feature attributes (sections) to feature IDs to connect features to vectorizers
+batch_stash:
+  data_point_type: 'class: zensols.deepnlp.classify.LabeledFeatureDocumentDataPoint'
+  batch_feature_mappings: 'dataclass(zensols.deeplearn.batch.ConfigBatchFeatureMapping): edusenti_batch_mappings'
+  decoded_attributes: 'set: label, ${edusenti_default:add_features} ${edusenti_default:embedding}'
+  # use all but 2 cores of the processor as number of sub-process to batch
+  workers: -2
+  # lower for the multlingual BERT model has (GPU memory size issues)
+  batch_size: 100
+
+
+## Model
+#
+# tell the model automation API which model to use
+executor:
+  net_settings: 'instance: classify_net_settings'
+
+# let our decoder (last fully connected feed forward network) the output
+# dimension as the number of labels to classify
+linear_settings:
+  out_features: "eval: '${dataframe_stash:labels}'.count(',') + 1"
+  dropout: 0
+
+# overrides for classification LSTM network
+classify_net_settings:
+  embedding_layer: 'instance: ${edusenti_default:embedding}_layer'
+  dropout: 0.2
+
+# tell the model to use a feature prediction mapper for our classification
+model_settings:
+  model_name: 'Education Review Sentiment: ${edusenti_default:name}'
+
+
+## Results
+#
+edusenti_result_compiler:
+  class_name: uic.edusenti.rescomp.ResultCompiler
+  corpus: 'instance: edusent_finetune_corpus'
+  double_anon_file: 'path: ${deepnlp_default:corpus_dir}/sq-double-anon.csv'

@@ -1,0 +1,16 @@
+# spacy 3.2
+typing-inspect==0.8.0
+typing_extensions==4.5.0
+
+# pretrained corpus
+langdetect~=1.0.9
+datasets~=2.8.0
+dill<0.3.5
+wikitextparser
+lxml==5.1.0
+zensols.db~=1.1.0
+
+# model
+urllib3==1.26.6
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.2.0/en_core_web_sm-3.2.0-py3-none-any.whl
+zensols.deepnlp~=1.8.0

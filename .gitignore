@@ -1,0 +1,7 @@
+*.pyc
+*_flymake.py
+*.log
+.ipynb_checkpoints
+/target
+/data
+/results

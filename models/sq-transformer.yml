@@ -1,0 +1,19 @@
+## Transformer
+#
+edusenti_default:
+  embedding_name: transformer_trainable
+  transformer_trainable_resource_model_id: ${default:root_dir}/data/${edusenti_default:lang}/ft/${edusenti_default:mm_name}/${edusenti_default:checkpoint}
+
+deeplearn_default:
+  batch_dir: ${default:root_dir}/data/${edusenti_default:lang}/batch-${edusenti_default:mm_name}_${edusenti_default:checkpoint}
+
+
+## Model
+#
+classify_net_settings:
+  dropout: None
+
+model_settings:
+  learning_rate: 3e-5
+  epochs: 10
+  optimizer_class_name: zensols.deepnlp.transformer.TransformerAdamFactory

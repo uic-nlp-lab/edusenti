@@ -1,0 +1,15 @@
+## Transformer
+#
+edusenti_default:
+  embedding_name: transformer_trainable
+
+
+## Model
+#
+classify_net_settings:
+  dropout: None
+
+model_settings:
+  learning_rate: 2e-5
+  epochs: 20
+  optimizer_class_name: zensols.deepnlp.transformer.TransformerAdamFactory

@@ -1,0 +1,137 @@
+## SQLite
+#
+edusenti_finetune_sqlite_conn_manager:
+  class_name: zensols.db.SqliteConnectionManager
+  db_file: 'path: ${deepnlp_default:corpus_dir}/finetune/${edusenti_default:lang}.sqlite3'
+
+edusenti_finetune_doc_persister:
+  class_name: zensols.db.BeanDbPersister
+  sql_file: 'resource(uic.edusenti): resources/finetune.sql'
+  conn_manager: 'instance: edusenti_finetune_sqlite_conn_manager'
+  select_name: select_doc
+  insert_name: insert_doc
+  count_name: doc_count
+  keys_name: select_doc_ids
+  select_exists_name: select_doc_exists
+
+edusent_finetune_sent_persister:
+  class_name: zensols.db.BeanDbPersister
+  sql_file: 'resource(uic.edusenti): resources/finetune.sql'
+  conn_manager: 'instance: edusenti_finetune_sqlite_conn_manager'
+  count_name: sent_count
+  insert_name: insert_sent
+
+edusent_finetune_corpus_source_persister:
+  class_name: zensols.db.BeanDbPersister
+  sql_file: 'resource(uic.edusenti): resources/finetune.sql'
+  conn_manager: 'instance: edusenti_finetune_sqlite_conn_manager'
+  count_name: corp_doc_count
+  select_name: corp_doc_select
+  insert_name: insert_corp_doc
+
+
+## Corpus parsing
+#
+edusent_finetune_doc_factory:
+  class_name: uic.edusenti.DocumentFactory
+  corpus_path_offset: 4
+  file_glob: '${deepnlp_default:corpus_dir}/finetune/${edusenti_default:lang}/**/*.xml'
+
+edusent_finetune_wiki_doc_factory:
+  class_name: uic.edusenti.WikipediaDocumentFactory
+  corpus_path_offset: 4
+  file_glob: '${deepnlp_default:corpus_dir}/finetune/${edusenti_default:lang}/**/*.xml'
+
+edusent_finetune_oscar_doc_factory:
+  class_name: uic.edusenti.OscarDocumentFactory
+  corpus_path_offset: 4
+  file_glob: '${deepnlp_default:corpus_dir}/finetune/${edusenti_default:lang}/**/*.jsonl'
+  min_lang_prob: 0.9
+
+edusent_finetune_doc_stash:
+  class_name: zensols.persist.DirectoryStash
+  path: 'path: ${default:data_dir}/finetune/doc'
+
+edusent_finetune_feat_doc_stash:
+  class_name: uic.edusenti.FeatureDocumentStash
+  doc_persister: 'instance: edusenti_finetune_doc_persister'
+  sent_persister: 'instance: edusent_finetune_sent_persister'
+  max_sent_size: 500
+
+
+## Corpus output
+#
+# compiler
+edusent_finetune_corpus_compiler:
+  class_name: uic.edusenti.CorpusCompiler
+  sources_file: 'resource(uic.edusenti): resources/finetune-albanian-sources.csv'
+  #doc_factory: 'instance: edusent_finetune_doc_factory'
+  #doc_factory: 'instance: edusent_finetune_wiki_doc_factory'
+  doc_factory: 'instance: edusent_finetune_oscar_doc_factory'
+  lang: sq
+  doc_stash: 'instance: edusent_finetune_doc_stash'
+  doc_persister: 'instance: edusenti_finetune_doc_persister'
+  sent_persister: 'instance: edusent_finetune_sent_persister'
+  corpus_source_persister: 'instance: edusent_finetune_corpus_source_persister'
+  recreate: false
+
+# dumper
+edusent_finetune_corpus_dumper:
+  class_name: uic.edusenti.CorpusDumper
+  feat_doc_stash: 'instance: edusent_finetune_feat_doc_stash'
+  row_size: 5000
+
+
+## Train
+#
+edusent_finetune_cleaner:
+  class_name: zensols.cli.Cleaner
+  paths: >-
+    eval: [[Path('${edusenti_default:finetune_output_dir}').resolve()]]
+
+edusent_finetune_sent_final_persister:
+  class_name: zensols.db.BeanDbPersister
+  sql_file: 'resource(uic.edusenti): resources/finetune.sql'
+  conn_manager: 'instance: edusenti_finetune_sqlite_conn_manager'
+  count_name: count_sent
+  select_name: select_sent
+  select_by_id_name: select_sent
+  keys_name: select_sent_ids
+
+edusent_finetune_corpus:
+  class_name: uic.edusenti.Corpus
+  persister: 'instance: edusent_finetune_sent_final_persister'
+  dataset_path: 'path: ${default:data_dir}/sents.arrow'
+  batch_size: 1000
+  test_size: 0.25
+  #read_limit: 10000
+
+# trainers
+edusent_finetune_token_trainer:
+  class_name: uic.edusenti.TokenizerTrainer
+  corpus: 'instance: edusent_finetune_corpus'
+  output_dir: 'path: ${edusenti_default:finetune_output_dir}/tok'
+  #tokenizer_checkpoint_model_id: '${edusenti_default:finetune_checkpoint_model_id}'
+  tokenizer_checkpoint_model_id: null
+  model_checkpoint_model_id: '${edusenti_default:finetune_checkpoint_model_id}'
+  hub_model_id: '${edusenti_default:finetune_hub_model_id}'
+  batch_size: 1000
+
+edusent_finetune_model_trainer:
+  class_name: uic.edusenti.MaskedModelTrainer
+  corpus: 'instance: edusent_finetune_corpus'
+  output_dir: 'path: ${edusenti_default:finetune_output_dir}/model'
+  #tokenizer_checkpoint_model_id: '${edusent_finetune_token_trainer:output_dir}'
+  tokenizer_checkpoint_model_id: null
+  model_checkpoint_model_id: '${edusenti_default:finetune_checkpoint_model_id}'
+  hub_model_id: '${edusenti_default:finetune_hub_model_id}'
+  use_whole_word_masking: false
+  chunk_size: 16
+  mask_probability: 0.15
+  batch_size: 32
+  trainer_args: |
+    dict: {
+      'learning_rate': 3e-5,
+      'weight_decay': 0.01,
+      'num_train_epochs': 7,
+    }
