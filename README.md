@@ -113,4 +113,4 @@ Copyright (c) 2024 Paul Landes and Krenare Pireva Nuci
 [MIT License]: https://opensource.org/licenses/MIT
 [Albanian pretraining corpus]: https://zenodo.org/records/10778230
 [zensols.edusenti]: https://github.com/plandes/edusenti
-[RoBERTa Low Resource Fine Tuning for Sentiment Analysis in Albanian]: https://example.com
+[RoBERTa Low Resource Fine Tuning for Sentiment Analysis in Albanian]: https://aclanthology.org/2024.lrec-main.1233
