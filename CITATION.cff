@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+title: 'RoBERTa Low Resource Fine Tuning for Sentiment Analysis in Albanian'
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+date-released: 2024-05-19
+repository-code: https://github.com/uic-nlp-lab/edusenti
+authors:
+  - given-names: Krenare
+    family-names: Nuci
+    affiliation: University of Prishtina
+  - given-names: Paul
+    family-names: Landes
+    email: landes@mailc.net
+    affiliation: University of Illinois at Chicago
+    orcid: 'https://orcid.org/0000-0003-0985-0864'
+  - given-names: Barbara
+    family-names: Di Eugenio
+    affiliation: University of Illinois at Chicago
+preferred-citation:
+  type: conference-paper
+  authors:
+    - given-names: Krenare
+      family-names: Nuci
+      affiliation: University of Prishtina
+    - given-names: Paul
+      family-names: Landes
+      email: landes@mailc.net
+      affiliation: University of Illinois at Chicago
+      orcid: 'https://orcid.org/0000-0003-0985-0864'
+    - given-names: Barbara
+      family-names: Di Eugenio
+      affiliation: University of Illinois at Chicago
+  title: 'CALAMR: Component ALignment for Abstract Meaning Representation'
+  url: https://aclanthology.org/2024.lrec-main.1233/
+  year: 2024
+  conference:
+    name: Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)
+    city: Torino
+    country: IT
+    date-start: 2024-05-20
+    date-end: 2024-05-25

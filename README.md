@@ -79,14 +79,24 @@ see how it was procured/cleaned.
 If you use this project in your research please use the following BibTeX entry:
 
 ```bibtex
-@inproceedings{nuciRoBERTaLowResource2024,
-  title = {{{RoBERTa Low Resource Fine Tuning}} for {{Sentiment Analysis}} in {{Albanian}}},
-  booktitle = {The 2024 {{Joint International Conference}} on {{Computational Linguistics}}, {{Language Resources}} and {{Evaluation}}},
-  author = {Nuci, Krenare and Landes, Paul and Di Eugenio, Barbara},
-  date = {2024-05-20},
-  publisher = {International Committee on Computational Linguistics},
-  location = {Turin, Italy},
-  eventtitle = {{{LREC-COLING}} 2024}
+@inproceedings{nuci-etal-2024-roberta-low,
+    title = "{R}o{BERT}a Low Resource Fine Tuning for Sentiment Analysis in {A}lbanian",
+    author = "Nuci, Krenare Pireva  and
+      Landes, Paul  and
+      Di Eugenio, Barbara",
+    editor = "Calzolari, Nicoletta  and
+      Kan, Min-Yen  and
+      Hoste, Veronique  and
+      Lenci, Alessandro  and
+      Sakti, Sakriani  and
+      Xue, Nianwen",
+    booktitle = "Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)",
+    month = may,
+    year = "2024",
+    address = "Torino, Italy",
+    publisher = "ELRA and ICCL",
+    url = "https://aclanthology.org/2024.lrec-main.1233",
+    pages = "14146--14151"
 }
 ```
 
